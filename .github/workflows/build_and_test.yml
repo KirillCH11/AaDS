@@ -14,14 +14,13 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-24.04   
+          - ubuntu-24.04
         python_version:
-          - 3.12          
+          - 3.12
         gcc_version:
-          - 12           
+          - 12
         exercise:
-          - Asignment1     
-
+          - Assignment1
     runs-on: "${{ matrix.os }}"
 
     steps:
@@ -34,6 +33,11 @@ jobs:
         uses: Dup4/actions-setup-gcc@v1
         with:
           version: "${{ matrix.gcc_version }}"
+
+      - name: Установка Питона (или Пайтона?..)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "${{ matrix.python_version }}"
 
       - name: Берём исходники из Гита
         uses: actions/checkout@v4
@@ -52,3 +56,10 @@ jobs:
           cd ${{ matrix.exercise }}
           ./build.sh
           cd ..
+
+      - name: Тестируем программу
+        run: |
+          cd ${{ matrix.exercise }}
+          ./test.sh
+          cd ..
+
