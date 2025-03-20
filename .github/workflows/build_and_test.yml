@@ -56,3 +56,10 @@ jobs:
           cd ${{ matrix.exercise }}
           ./build.sh
           cd ..
+
+      - name: Тестируем программу
+        run: |
+          cd ${{ matrix.exercise }}
+          ./test.sh
+          cd ..
+

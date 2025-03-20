@@ -8,7 +8,7 @@ Assignment 1 - Writing a (de)coder program for ASCII85 on C++
 
 ## Build
 
-### Demo application
+### Demo application and tests
 
 <par> ./build.sh </par>
 
@@ -17,6 +17,10 @@ Assignment 1 - Writing a (de)coder program for ASCII85 on C++
 ### Demo application
 
 <par> ./ascii85 </par>
+
+### Demo tests suite
+
+<par> ./test.sh </par>
 
 
 
