@@ -1,0 +1,54 @@
+name: "Builg & Test"
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build_n_test:
+    name: Настройка, сборка и тестирование
+    strategy:
+      matrix:
+        os:
+          - ubuntu-24.04   
+        python_version:
+          - 3.12          
+        gcc_version:
+          - 12           
+        exercise:
+          - AaDS     
+
+    runs-on: "${{ matrix.os }}"
+
+    steps:
+      - name: Установка make и некоторых других инструментов
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libgtest-dev libgmock-dev
+
+      - name: Установка GCC
+        uses: Dup4/actions-setup-gcc@v1
+        with:
+          version: "${{ matrix.gcc_version }}"
+
+      - name: Берём исходники из Гита
+        uses: actions/checkout@v4
+
+      - name: Печать окружения. Окружение — это интересно.
+        run: |
+          echo GITHUB_ENV: $GITHUB_ENV
+          echo '=================== Содержимое GITHUB_ENV ====================='
+          cat $GITHUB_ENV || true
+          echo '==================== Окружение в итоге ========================'
+          source $GITHUB_ENV || true
+          env
+
+      - name: Собираем программу
+        run: |
+          cd ${{ matrix.exercise }}
+          ./build.sh
+          cd ..
