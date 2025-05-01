@@ -1,0 +1,60 @@
+name: "Build & Test"
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build_and_test:
+    name: Build and Test
+    strategy:
+      matrix:
+        os: [ubuntu-24.04]
+        gcc_version: ["12"]
+    
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libgtest-dev libgmock-dev libeigen3-dev
+
+      - name: Set up GCC ${{ matrix.gcc_version }}
+        uses: Dup4/actions-setup-gcc@v1
+        with:
+          version: "${{ matrix.gcc_version }}"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build program
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Run tests
+        run: |
+          chmod +x test.sh
+          ./test.sh
+
+      - name: Verify CSV I/O
+        run: |
+          # Генерируем тестовую систему
+          ./gauss_solver --generate 5 test_system.csv
+          
+          # Решаем и проверяем что вывод корректен
+          ./gauss_solver test_system.csv test_solution.csv
+          
+          # Проверяем что файл с решением создан
+          if [ ! -f "test_solution.csv" ]; then
+            echo "Solution file was not created"
+            exit 1
+          fi
+          
+          # Удаляем временные файлы
+          rm test_system.csv test_solution.csv
