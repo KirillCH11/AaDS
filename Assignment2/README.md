@@ -1,4 +1,4 @@
-# Assignment 1
+# Assignment 2
 ## Author
 Чуркин Кирилл Алексеевич; 24.Б81-мм
 ## Contacts
