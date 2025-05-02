@@ -2,11 +2,9 @@ name: "Build & Test"
 
 on:
   push:
-    branches:
-      - "*"
+    branches: ["*"]
   pull_request:
-    branches:
-      - "*"
+    branches: ["*"]
 
 jobs:
   build_and_test:
@@ -29,37 +27,36 @@ jobs:
         with:
           version: "${{ matrix.gcc_version }}"
 
-     - name: Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Navigate to Assignment2
         run: |
-          cd Assignment2 || exit 1
+          cd Assignment2 || { echo "::error::Directory Assignment2 not found"; ls -la; exit 1; }
           echo "WORKDIR=$(pwd)" >> $GITHUB_ENV
-          
+
       - name: Build program
         run: |
+          cd ${{ env.WORKDIR }}
           chmod +x build.sh
           ./build.sh
 
       - name: Run tests
         run: |
+          cd ${{ env.WORKDIR }}
           chmod +x test.sh
           ./test.sh
 
       - name: Verify CSV I/O
         run: |
-          # Генерируем тестовую систему
+          cd ${{ env.WORKDIR }}
           ./gauss_solver --generate 5 test_system.csv
-          
-          # Решаем и проверяем что вывод корректен
           ./gauss_solver test_system.csv test_solution.csv
           
-          # Проверяем что файл с решением создан
           if [ ! -f "test_solution.csv" ]; then
-            echo "Solution file was not created"
+            echo "::error::Solution file was not created"
+            ls -la
             exit 1
           fi
           
-          # Удаляем временные файлы
-          rm test_system.csv test_solution.csv
+          rm -f test_system.csv test_solution.csv
