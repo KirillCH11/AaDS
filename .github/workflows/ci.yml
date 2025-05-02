@@ -9,58 +9,38 @@ on:
 jobs:
   build_and_test:
     name: Build and Test
-    strategy:
-      matrix:
-        os: [ubuntu-24.04]
-        gcc_version: ["12"]
+    runs-on: ubuntu-24.04
     
-    runs-on: ${{ matrix.os }}
-
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: "repo"
+
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libgtest-dev libgmock-dev libeigen3-dev
 
-      - name: Set up GCC ${{ matrix.gcc_version }}
-        uses: Dup4/actions-setup-gcc@v1
-        with:
-          version: "${{ matrix.gcc_version }}"
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Clone CSV parser
         run: |
-          git clone https://github.com/ben-strasser/fast-cpp-csv-parser.git Assignment2/fast-cpp-csv-parser
+          git clone https://github.com/ben-strasser/fast-cpp-csv-parser.git repo/Assignment2/fast-cpp-csv-parser
 
-      - name: Navigate to Assignment2
+      - name: Build and Test
         run: |
-          cd Assignment2 || { echo "::error::Directory Assignment2 not found"; ls -la; exit 1; }
-          echo "WORKDIR=$(pwd)" >> $GITHUB_ENV
-
-      - name: Build program
-        run: |
-          cd ${{ env.WORKDIR }}
-          chmod +x build.sh
-          ./build.sh
-
-      - name: Run tests
-        run: |
-          cd ${{ env.WORKDIR }}
-          chmod +x test.sh
-          ./test.sh
-
-      - name: Verify CSV I/O
-        run: |
-          cd ${{ env.WORKDIR }}
+          cd repo/Assignment2 || { echo "::error::Directory structure:"; ls -R; exit 1; }
+          
+          g++ -std=c++17 -I. -I./fast-cpp-csv-parser -I/usr/include/eigen3 \
+              main.cpp gauss_lib.cpp \
+              -o gauss_solver
+          
+          g++ -std=c++17 -I. -I./fast-cpp-csv-parser -I/usr/include/eigen3 \
+              gauss_tests.cpp gauss_lib.cpp \
+              -lgtest -lgmock -lpthread \
+              -o gauss_tests
+          ./gauss_tests
+          
           ./gauss_solver --generate 5 test_system.csv
           ./gauss_solver test_system.csv test_solution.csv
-          
-          if [ ! -f "test_solution.csv" ]; then
-            echo "::error::Solution file was not created"
-            ls -la
-            exit 1
-          fi
-          
+          [ -f "test_solution.csv" ] || { echo "::error::Solution file not created"; exit 1; }
           rm -f test_system.csv test_solution.csv
