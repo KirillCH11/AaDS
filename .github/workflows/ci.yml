@@ -1,0 +1,33 @@
+name: "Build & Test"
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libgtest-dev libgmock-dev libeigen3-dev
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and test
+        run: |
+          cd Assignment2 || { echo "Directory Assignment2 not found"; exit 1; }
+          g++ -std=c++17 -c -I. -I/usr/include/eigen3 -Ifast-cpp-csv-parser gauss_lib.cpp -o gauss_lib.o
+          
+          g++ -std=c++17 -I. -I/usr/include/eigen3 -Ifast-cpp-csv-parser main.cpp gauss_lib.o -o gauss_solver
+          
+          g++ -std=c++17 -I. -I/usr/include/eigen3 -Ifast-cpp-csv-parser gauss_tests.cpp gauss_lib.o -lgtest -lgtest_main -lgmock -lpthread -o gauss_tests
+          ./gauss_tests
+          
+          echo "All tests passed!"
