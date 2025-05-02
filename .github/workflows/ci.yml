@@ -17,46 +17,62 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: "Assignment2"
+
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libgtest-dev libgmock-dev libeigen3-dev
+          sudo apt-get install -y \
+            build-essential \
+            libeigen3-dev \
+            libgtest-dev \
+            libgmock-dev \
+            cmake
 
-      - name: Set up GCC ${{ matrix.gcc_version }}
-        uses: Dup4/actions-setup-gcc@v1
+      - name: Setup GCC ${{ matrix.gcc_version }}
+        uses: matrix-org/setup-gcc@v1
         with:
           version: "${{ matrix.gcc_version }}"
 
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Navigate to Assignment2
+      - name: Clone CSV parser
         run: |
-          cd Assignment2 || { echo "::error::Directory Assignment2 not found"; ls -la; exit 1; }
-          echo "WORKDIR=$(pwd)" >> $GITHUB_ENV
+          cd Assignment2
+          git clone https://github.com/ben-strasser/fast-cpp-csv-parser.git
 
       - name: Build program
         run: |
           cd Assignment2
-          chmod +x build.sh
-          ./build.sh
+          g++ -std=c++17 -I. -I./fast-cpp-csv-parser -I/usr/include/eigen3 \
+              main.cpp gauss_lib.cpp \
+              -o gauss_solver
 
       - name: Run tests
         run: |
-          cd ${{ env.WORKDIR }}
-          chmod +x test.sh
-          ./test.sh
+          cd Assignment2
+          g++ -std=c++17 -I. -I./fast-cpp-csv-parser -I/usr/include/eigen3 \
+              gauss_tests.cpp gauss_lib.cpp \
+              -lgtest -lgmock -lpthread \
+              -o gauss_tests
+          ./gauss_tests
 
-      - name: Verify CSV I/O
+      - name: Integration test
         run: |
-          cd ${{ env.WORKDIR }}
+          cd Assignment2
           ./gauss_solver --generate 5 test_system.csv
-          ./gauss_solver test_system.csv test_solution.csv
+          ./gauss_solver test_system.csv solution.csv
           
-          if [ ! -f "test_solution.csv" ]; then
-            echo "::error::Solution file was not created"
-            ls -la
+          if [ ! -f "solution.csv" ]; then
+            echo "::error::Solution file not created!"
             exit 1
           fi
           
-          rm -f test_system.csv test_solution.csv
+          LINES=$(wc -l < solution.csv)
+          if [ "$LINES" -ne 5 ]; then
+            echo "::error::Incorrect solution size!"
+            exit 1
+          fi
+          
+          rm -f test_system.csv solution.csv
