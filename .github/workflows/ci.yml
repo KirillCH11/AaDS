@@ -29,6 +29,11 @@ jobs:
         with:
           version: "${{ matrix.gcc_version }}"
 
+      - name: Navigate to Assignment2
+        run: |
+          cd Assignment2 || exit 1
+          echo "WORKDIR=$(pwd)" >> $GITHUB_ENV
+          
       - name: Checkout code
         uses: actions/checkout@v4
 
