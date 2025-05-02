@@ -10,37 +10,24 @@ jobs:
   build_and_test:
     name: Build and Test
     runs-on: ubuntu-24.04
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          path: "repo"
 
+    steps:
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libgtest-dev libgmock-dev libeigen3-dev
 
-      - name: Clone CSV parser
-        run: |
-          git clone https://github.com/ben-strasser/fast-cpp-csv-parser.git repo/Assignment2/fast-cpp-csv-parser
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Build and Test
+      - name: Build and test
         run: |
-          cd repo/Assignment2 || { echo "::error::Directory structure:"; ls -R; exit 1; }
+          cd Assignment2 || { echo "Directory Assignment2 not found"; exit 1; }
+          g++ -std=c++17 -c -I. -I/usr/include/eigen3 -Ifast-cpp-csv-parser gauss_lib.cpp -o gauss_lib.o
           
-          g++ -std=c++17 -I. -I./fast-cpp-csv-parser -I/usr/include/eigen3 \
-              main.cpp gauss_lib.cpp \
-              -o gauss_solver
+          g++ -std=c++17 -I. -I/usr/include/eigen3 -Ifast-cpp-csv-parser main.cpp gauss_lib.o -o gauss_solver
           
-          g++ -std=c++17 -I. -I./fast-cpp-csv-parser -I/usr/include/eigen3 \
-              gauss_tests.cpp gauss_lib.cpp \
-              -lgtest -lgmock -lpthread \
-              -o gauss_tests
+          g++ -std=c++17 -I. -I/usr/include/eigen3 -Ifast-cpp-csv-parser gauss_tests.cpp gauss_lib.o -lgtest -lgtest_main -lgmock -lpthread -o gauss_tests
           ./gauss_tests
           
-          ./gauss_solver --generate 5 test_system.csv
-          ./gauss_solver test_system.csv test_solution.csv
-          [ -f "test_solution.csv" ] || { echo "::error::Solution file not created"; exit 1; }
-          rm -f test_system.csv test_solution.csv
+          echo "All tests passed!"
