@@ -37,7 +37,7 @@ jobs:
 
       - name: Build program
         run: |
-          cd ${{ env.WORKDIR }}
+          cd Assignment2
           chmod +x build.sh
           ./build.sh
 
