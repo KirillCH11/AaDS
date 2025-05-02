@@ -4,7 +4,7 @@
 
 #include "gauss_functions.h"
 #include <Eigen/Dense>
-#include "fast-cpp-csv-parser/csv.h"
+#include "csv.h"
 #include <fstream>    
 #include <random>     
 #include <stdexcept>  
