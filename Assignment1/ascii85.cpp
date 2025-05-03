@@ -171,4 +171,58 @@ int main(int argc, char* argv[]) {
     return 0;
 };
 
+#else
+
+#include "gtest/gtest.h"
+
+TEST(Ascii85EncodeDecode, EmptyInput) {
+    std::vector<unsigned char> input;
+    std::string encoded = ascii85::encode(input);
+    EXPECT_EQ(encoded, "");
+    std::vector<unsigned char> decoded = ascii85::decode(encoded);
+    EXPECT_EQ(decoded, input);
+}
+
+TEST(Ascii85EncodeDecode, SimpleInput) {
+    std::string text = "Hello, World!";
+    std::vector<unsigned char> input(text.begin(), text.end());
+    std::string encoded = ascii85::encode(input);
+    std::vector<unsigned char> decoded = ascii85::decode(encoded);
+    EXPECT_EQ(decoded, input);
+}
+
+TEST(Ascii85EncodeDecode, AllZeroBlock) {
+    std::vector<unsigned char> input = {0,0,0,0};
+    std::string encoded = ascii85::encode(input);
+    EXPECT_EQ(encoded, "z");
+    std::vector<unsigned char> decoded = ascii85::decode(encoded);
+    EXPECT_EQ(decoded, input);
+}
+
+TEST(Ascii85Decode, IncompleteFinalGroup) {
+    std::vector<unsigned char> input = {'M', 'a', 'n'};
+    std::string encoded = ascii85::encode(input);
+    std::vector<unsigned char> decoded = ascii85::decode(encoded);
+    EXPECT_EQ(decoded, input);
+}
+
+TEST(Ascii85Decode, InvalidCharacter) {
+    std::string invalid = "!!!!~";
+    EXPECT_THROW({
+        ascii85::decode(invalid);
+    }, std::runtime_error);
+}
+
+TEST(Ascii85Decode, InvalidZUsage) {
+    std::string invalid = "abzcd";
+    EXPECT_THROW({
+        ascii85::decode(invalid);
+    }, std::runtime_error);
+}
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+};
+
 #endif
