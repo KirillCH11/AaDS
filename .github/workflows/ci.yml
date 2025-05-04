@@ -31,7 +31,7 @@ jobs:
           make
           echo "Тест ручного ввода:"
           echo -e "0 10 110 0 1110 0 1111 0 10 110 0\n\na:0\nb:10\nr:110\nc:1110\nd:1111\n" > input.txt
-          ./decoder < input.txt
+          < input.txt
           [ $? -eq 0 ] || exit 1
           [ -f decoded.txt ] && grep -q "abracadabra" decoded.txt || exit 1
           echo "Ручной тест пройден!"
