@@ -1,0 +1,23 @@
+name: Encoder CI
+on: [push, pull_request]
+
+jobs:
+  test_encoder:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Install dependencies
+      run: sudo apt-get install -y g++ libgtest-dev make
+      
+    - name: Build GTest
+      run: |
+        cd /usr/src/gtest
+        sudo cmake CMakeLists.txt
+        sudo make
+        sudo cp *.a /usr/lib
+        
+    - name: Run encoder tests
+      run: |
+        cd shannon_encoder
+        make test
