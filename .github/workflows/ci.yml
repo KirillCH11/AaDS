@@ -1,4 +1,4 @@
-name: Decoder CI
+name: "Build & Test"
 
 on:
   push:
@@ -7,12 +7,9 @@ on:
     branches: ["*"]
 
 jobs:
-  test_decoder:
-    name: Test Decoder
+  build_and_test:
+    name: Build and Test
     runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: ./decoder
 
     steps:
       - name: Install dependencies
