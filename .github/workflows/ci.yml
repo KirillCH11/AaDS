@@ -1,0 +1,47 @@
+name: "Build & Test"
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libgtest-dev cmake
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and test
+        run: |
+          # Build GoogleTest
+          sudo cmake -S /usr/src/googletest -B /usr/src/googletest/build
+          sudo cmake --build /usr/src/googletest/build
+          sudo cmake --install /usr/src/googletest/build --prefix /usr/local
+
+          # Build project
+          make
+
+          # Run tests
+          make test
+
+          # Test with binary file
+          dd if=/dev/urandom of=test.bin bs=1K count=1
+          ./shannon_decoder test.bin test_dict.bin test_output.txt
+          [ -f test_output.txt ] || exit 1
+          [ -s test_output.txt ] || exit 1
+
+          echo "Все тесты пройдены успешно!"
+
+      - name: Run manual test
+        run: |
+          echo "Тест ручного ввода:"
+          echo -e "1010\n\na:10\nb:01\n" | ./shannon_decoder
