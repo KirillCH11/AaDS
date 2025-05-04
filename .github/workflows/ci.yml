@@ -1,4 +1,4 @@
-name: "Build & Test"
+name: Decoder CI
 
 on:
   push:
@@ -7,38 +7,38 @@ on:
     branches: ["*"]
 
 jobs:
-  build_and_test:
-    name: Build and Test
+  test_decoder:
+    name: Test Decoder
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./decoder
 
     steps:
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libgtest-dev cmake
+          cd /usr/src/googletest
+          sudo cmake CMakeLists.txt
+          sudo make
+          sudo cp *.a /usr/lib
 
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build and test
+      - name: Build and run tests
         run: |
-          # Build GoogleTest
-          sudo cmake -S /usr/src/googletest -B /usr/src/googletest/build
-          sudo cmake --build /usr/src/googletest/build
-          sudo cmake --install /usr/src/googletest/build --prefix /usr/local
-
-          make
-
+          make clean
           make test
+          ./test_decoder
 
-          dd if=/dev/urandom of=test.bin bs=1K count=1
-          ./main test.bin test_dict.bin test_output.txt
-          [ -f test_output.txt ] || exit 1
-          [ -s test_output.txt ] || exit 1
-
-          echo "Все тесты пройдены успешно!"
-
-      - name: Run manual test
+      - name: Manual decoding test
         run: |
+          make
           echo "Тест ручного ввода:"
-          echo -e "1010\n\na:10\nb:01\n" | ./main
+          echo -e "0 10 110 0 1110 0 1111 0 10 110 0\n\na:0\nb:10\nr:110\nc:1110\nd:1111\n" > input.txt
+          ./decoder < input.txt
+          [ $? -eq 0 ] || exit 1
+          [ -f decoded.txt ] && grep -q "abracadabra" decoded.txt || exit 1
+          echo "Ручной тест пройден!"
