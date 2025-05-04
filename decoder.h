@@ -1,3 +1,7 @@
+/* Churkin Kirill st129364@student.spbu.ru
+	AaDS; Assignment 3
+*/
+
 #ifndef DECODER_H
 #define DECODER_H
 

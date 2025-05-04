@@ -1,3 +1,7 @@
+/* Churkin Kirill st129364@student.spbu.ru
+	AaDS; Assignment 3
+*/
+
 #include "decoder.h"
 #include <fstream>
 #include <vector>
@@ -67,19 +71,11 @@ static vector<char> decodeData(const vector<bool>& bits,
     for (bool bit : bits) {
         current_code += bit ? '1' : '0';
         
-        // Проверяем, является ли текущая последовательность валидным кодом
         if (code_map.count(current_code)) {
             result.push_back(code_map[current_code]);
             current_code.clear();
         }
     }
-    
-    // Убедимся, что не осталось необработанных битов
-    if (!current_code.empty()) {
-        cerr << "Warning: " << current_code.size() 
-             << " trailing bits were not decoded" << endl;
-    }
-    
     return result;
 }
 

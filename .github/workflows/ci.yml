@@ -27,15 +27,12 @@ jobs:
           sudo cmake --build /usr/src/googletest/build
           sudo cmake --install /usr/src/googletest/build --prefix /usr/local
 
-          # Build project
           make
 
-          # Run tests
           make test
 
-          # Test with binary file
           dd if=/dev/urandom of=test.bin bs=1K count=1
-          ./shannon_decoder test.bin test_dict.bin test_output.txt
+          ./main test.bin test_dict.bin test_output.txt
           [ -f test_output.txt ] || exit 1
           [ -s test_output.txt ] || exit 1
 
@@ -44,4 +41,4 @@ jobs:
       - name: Run manual test
         run: |
           echo "Тест ручного ввода:"
-          echo -e "1010\n\na:10\nb:01\n" | ./shannon_decoder
+          echo -e "1010\n\na:10\nb:01\n" | ./main
