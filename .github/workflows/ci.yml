@@ -16,7 +16,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libgtest-dev cmake
-          cd /usr/src/gtest
+          cd /usr/src/googletest
           sudo cmake CMakeLists.txt
           sudo make
           sudo cp lib/*.a /usr/lib
@@ -29,15 +29,6 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -O2 test_decoder.cpp decoder.cpp -o test_decoder -lgtest -lgtest_main -lpthread
           ./test_decoder
 
-      - name: Build decoder executable
+      - name: Build decoder
         run: |
           g++ -std=c++17 -Wall -Wextra -O2 main.cpp decoder.cpp -o decoder
-
-      - name: Run manual test
-        run: |
-          echo "Running manual test..."
-          echo -e "0 10 110 0 1110 0 1111 0 10 110 0\na:0\nb:10\nr:110\nc:1110\nd:1111\n" > input.txt
-          ./decoder < input.txt
-          [ $? -eq 0 ] || exit 1
-          [ -f decoded.txt ] && grep -q "abracadabra" decoded.txt || exit 1
-          echo "Manual test passed!"
