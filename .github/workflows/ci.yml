@@ -1,0 +1,46 @@
+name: "Build & Test"
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libgtest-dev cmake
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and test
+        run: |
+          # Build GoogleTest
+          sudo cmake -S /usr/src/googletest -B /usr/src/googletest/build
+          sudo cmake --build /usr/src/googletest/build
+          sudo cmake --install /usr/src/googletest/build --prefix /usr/local
+
+          g++ -std=c++17 -c encoder.cpp -o encoder.o
+          g++ -std=c++17 main.cpp encoder.o -o shannon_encoder
+          g++ -std=c++17 -c test_encoder.cpp -o test_encoder.o
+          g++ -std=c++17 test_encoder.o encoder.o -lgtest -lgtest_main -lpthread -o shannon_tests
+          
+          ./shannon_tests
+
+          dd if=/dev/urandom of=test.bin bs=1K count=1
+          ./shannon_encoder test.bin encoded.bin dict.bin
+          [ -f encoded.bin ] || exit 1
+          [ -f dict.bin ] || exit 1
+          
+          echo "All tests passed!"
+
+      - name: Run manual test
+        run: |
+          ./shannon_encoder <<< "abracadabra"
